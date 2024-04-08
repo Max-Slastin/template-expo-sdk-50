@@ -13,7 +13,7 @@ export const getProfile = async (): Promise<SupabaseResult | null> => {
 
     const { data, error, status } = await supabase
       .from("profiles")
-      .select("firstName, lastName, phoneNumber")
+      .select("first_name, last_name, phone_number")
       .eq("id", session?.user.id)
       .single();
     if (error && status !== 406) {
@@ -21,7 +21,12 @@ export const getProfile = async (): Promise<SupabaseResult | null> => {
     }
 
     if (data) {
-      return { status: SupabaseRequestStatus.Ok, data };
+      const newData: TProfileData = {
+        firstName: data.first_name,
+        lastName: data.last_name,
+        phoneNumber: data.phone_number,
+      };
+      return { status: SupabaseRequestStatus.Ok, data: newData };
     }
   } catch (error) {
     if (error instanceof Error) {
@@ -40,8 +45,10 @@ export const updateProfile = async (
 
     const updates = {
       id: session?.user.id,
-      updatedAt: new Date(),
-      ...data,
+      updated_at: new Date(),
+      first_name: data.firstName,
+      last_name: data.lastName,
+      phone_number: data.phoneNumber,
     };
 
     const { error } = await supabase.from("profiles").upsert(updates);
